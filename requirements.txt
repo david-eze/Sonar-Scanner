@@ -1,0 +1,20 @@
+# Python Dependencies for AI-Enhanced Sonar Scanner Visualizer
+# Install with: pip install -r requirements.txt
+
+# Serial communication
+pyserial>=3.5
+
+# Data processing and scientific computing
+numpy>=1.21.0
+
+# Computer vision and image processing
+opencv-python>=4.5.0
+
+# Machine learning and clustering
+scikit-learn>=1.0.0
+
+# Scientific computing for distance calculations
+scipy>=1.7.0
+
+# Optional: For advanced plotting (if needed)
+matplotlib>=3.4.0
