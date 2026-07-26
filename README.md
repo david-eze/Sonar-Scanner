@@ -1,44 +1,40 @@
-# AI-Enhanced Sonar & Spatial Occupancy Scanner
+# Sonar & Spatial Occupancy Scanner
 
-Built on ESP32-S3 with dual-core FreeRTOS architecture, featuring Extended Kalman Filter noise reduction, on-device ML classification, and real-time Python visualization with computer vision.
+An ESP32-S3 sonar rig that sweeps an ultrasonic sensor with a servo, filters the returns with an Extended Kalman Filter, classifies what it's looking at with an on-device k-NN model, and streams everything to a Python visualizer that draws a live occupancy grid.
 
 ## Features
 
 ### Firmware (ESP32-S3)
-- **Dual-Core FreeRTOS Architecture**: Dedicated cores for sensor acquisition and motor control
-- **Extended Kalman Filter (EKF)**: Real-time noise filtering for multipath interference and sensor jitter
-- **Edge AI Classification**: On-device k-NN classifier for object categorization
-- **High-Frequency Sampling**: 100Hz sensor acquisition with hardware interrupts
-- **Sinusoidal Sweep Control**: Smooth servo motor control for continuous scanning
-- **Structured Telemetry**: JSON streaming at 921600 baud
+- Dual-core FreeRTOS setup: one core handles sensor acquisition, the other handles motor control and telemetry
+- Extended Kalman Filter (EKF) to smooth out multipath interference and sensor jitter
+- A small on-device k-NN classifier for basic object categorization
+- 100Hz sensor sampling driven by hardware interrupts
+- Sinusoidal servo sweep for continuous scanning instead of jerky step motion
+- JSON telemetry streamed over serial at 921600 baud
 
-### Python Visualizer
-- **Real-time Occupancy Grid**: Polar-to-Cartesian mapping with fading radar trails
-- **DBSCAN Clustering**: Automatic object detection and grouping
-- **Bounding Box Visualization**: Visual object identification
-- **Velocity Vector Tracking**: Dynamic object movement analysis
-- **AI Confidence Display**: Real-time classification confidence metrics
+### Python visualizer
+- Real-time occupancy grid, polar readings mapped to Cartesian with fading trails
+- DBSCAN clustering to group returns into discrete objects
+- Bounding boxes drawn around detected objects
+- Velocity vectors for moving objects
+- Live display of classification confidence
 
-## Hardware Requirements
+## Hardware
 
-### ESP32-S3 Board
+### ESP32-S3 board
 - ESP32-S3-DevKitC-1 or equivalent
-- Dual-core Xtensa LX7 processor
-- PSRAM support (optional but recommended)
+- Dual-core Xtensa LX7
+- PSRAM is optional but recommended
 
 ### Sensors
-- **Ultrasonic Sensor**: HC-SR04 or JSN-SR04T
-  - Range: 2cm to 400cm
-  - Trigger/Echo interface
-- **Alternative**: TF-Luna Micro-LiDAR (I2C/UART)
+- Ultrasonic: HC-SR04 or JSN-SR04T, 2cm to 400cm range, trigger/echo interface
+- Alternative: TF-Luna micro-LiDAR (I2C/UART)
 
 ### Motor
-- **Servo Motor**: Standard PWM servo (SG90, MG996R, etc.)
-  - Range: 0-180 degrees
-  - PWM control at 50Hz
-- **Alternative**: Stepper motor with driver
+- Standard PWM servo (SG90, MG996R, etc.), 0-180°, 50Hz PWM
+- Alternative: stepper motor with driver
 
-### Pin Configuration
+### Pin configuration
 ```
 TRIGGER_PIN  -> GPIO5
 ECHO_PIN     -> GPIO18
@@ -46,9 +42,9 @@ SERVO_PIN    -> GPIO16 (PWM)
 UART0        -> USB/Serial (921600 baud)
 ```
 
-## Software Architecture
+## Software architecture
 
-### Firmware Structure
+### Firmware structure
 ```
 src/
 ├── main.cpp                      
@@ -60,67 +56,64 @@ include/
 └── object_classifier.h           
 ```
 
-### Core Assignment
-- **Core 0 (APP_CPU)**: Sensor acquisition with EKF filtering
-- **Core 1 (PRO_CPU)**: Motor control and telemetry streaming
+### Core assignment
+- Core 0 (APP_CPU): sensor acquisition and EKF filtering
+- Core 1 (PRO_CPU): motor control and telemetry streaming
 
-### Data Flow
+### Data flow
 ```
 Ultrasonic Sensor -> Interrupt -> EKF -> Shared Memory -> Classifier -> JSON -> Serial
                                                     ↓
                                               Servo PWM
 ```
 
-## Mathematical Foundation
+## Math
 
 ### Extended Kalman Filter
 
-The EKF models the system state as:
+State vector:
 ```
-State vector: x = [distance, velocity]^T
+x = [distance, velocity]^T
 ```
 
-**Prediction Step**:
+**Prediction**
 ```
 x_pred = F * x_prev
 P_pred = F * P_prev * F^T + Q
 ```
 
-Where F is the state transition matrix for constant velocity model:
+`F` is the state transition matrix for a constant-velocity model:
 ```
 F = [1  dt]
     [0   1]
 ```
 
-**Update Step**:
+**Update**
 ```
 K = P_pred * H^T * (H * P_pred * H^T + R)^-1
 x = x_pred + K * (z - h(x_pred))
 P = (I - K * H) * P_pred
 ```
 
-### Polar to Cartesian Transformation
+### Polar to Cartesian
 ```
 x = r * cos(θ)
 y = r * sin(θ)
 ```
 
-Where:
-- r: radial distance (meters)
-- θ: angle in radians
-- x, y: Cartesian coordinates
+Where `r` is radial distance in meters, `θ` is angle in radians, and `x, y` are the resulting Cartesian coordinates.
 
-### k-NN Classification
+### k-NN classification
 
-Feature vector includes:
+The feature vector per detection:
 - Distance (current measurement)
 - Velocity (rate of change)
 - Variance (measurement consistency)
 - Amplitude (signal strength)
-- Gradient (multi-sample rate of change)
-- Consistency (inverse normalized variance)
+- Gradient (rate of change across multiple samples)
+- Consistency (inverse of normalized variance)
 
-Euclidean distance in feature space:
+Classification uses plain Euclidean distance in that feature space:
 ```
 d = √(Σ(xi - yi)²)
 ```
@@ -130,56 +123,56 @@ d = √(Σ(xi - yi)²)
 ### Prerequisites
 - PlatformIO CLI
 - Python 3.8+
-- ESP32-S3 development board
-- USB cable for programming
+- ESP32-S3 dev board
+- USB cable
 
-### Firmware Setup
+### Firmware setup
 
-1. **Install PlatformIO** (if not already installed):
+1. Install PlatformIO if you haven't already:
 ```bash
 pip install platformio
 ```
 
-2. **Install Dependencies**:
+2. Install dependencies:
 ```bash
 cd "Sonar Scanner"
 pio lib install
 ```
 
-3. **Build Firmware**:
+3. Build:
 ```bash
 pio run
 ```
 
-4. **Upload to ESP32-S3**:
+4. Upload to the ESP32-S3:
 ```bash
 pio run --target upload
 ```
 
-5. **Monitor Serial Output**:
+5. Watch serial output:
 ```bash
 pio device monitor
 ```
 
-### Python Visualizer Setup
+### Python visualizer setup
 
-1. **Install Python Dependencies**:
+1. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-2. **Run Visualizer**:
+2. Run it:
 ```bash
 python visualizer.py --port COM3 --baud 921600
 ```
 
-Adjust the port based on your system (COM3 for Windows, /dev/ttyUSB0 for Linux).
+Change the port to match your system (`COM3` on Windows, `/dev/ttyUSB0` on Linux).
 
 ## Configuration
 
-### Firmware Parameters
+### Firmware parameters
 
-Edit `src/main.cpp` to modify:
+In `src/main.cpp`:
 
 ```cpp
 #define TRIGGER_PIN      5     
@@ -193,9 +186,9 @@ Edit `src/main.cpp` to modify:
 #define MAX_DISTANCE_M          4.0f    
 ```
 
-### EKF Tuning
+### EKF tuning
 
-Adjust EKF parameters in `main.cpp`:
+In `main.cpp`:
 ```cpp
 ExtendedKalmanFilter ekf(0.1f, 0.3f);
 //                        ^      ^
@@ -203,20 +196,20 @@ ExtendedKalmanFilter ekf(0.1f, 0.3f);
 //                 Process noise  Measurement noise
 ```
 
-- **Process noise (Q)**: Higher values allow faster adaptation to changes
-- **Measurement noise (R)**: Higher values trust measurements less
+- Process noise (Q): higher values let the filter adapt faster to real changes, at the cost of more jitter
+- Measurement noise (R): higher values make the filter trust raw sensor readings less
 
-### Motor Control
+### Motor control
 
-Adjust sweep parameters in `motorControlTask`:
+In `motorControlTask`:
 ```cpp
 motorCommand.sweepAmplitude = 90.0f;  
 motorCommand.sweepFrequency = 0.5f;   
 ```
 
-### Visualizer Parameters
+### Visualizer parameters
 
-Edit `visualizer.py` to modify:
+In `visualizer.py`:
 
 ```python
 self.grid_size = 400    
@@ -224,25 +217,25 @@ self.scale = 100
 self.decay_rate = 0.98   
 ```
 
-DBSCAN clustering parameters:
+DBSCAN parameters:
 ```python
 eps = 0.3              
 min_samples = 3           
 ```
 
-## Object Classes
+## Object classes
 
-The system classifies objects into 5 categories:
+The classifier sorts detections into five buckets:
 
-1. **Wall/Flat**: Consistent reflections, low variance
-2. **Corner/Edge**: High variance, discontinuous returns
-3. **Dynamic/Moving**: Significant velocity, moderate variance
-4. **Human/Soft**: Low amplitude, absorbing materials
-5. **Unknown**: Insufficient data for classification
+1. **Wall/flat**: consistent reflections, low variance
+2. **Corner/edge**: high variance, discontinuous returns
+3. **Dynamic/moving**: noticeable velocity, moderate variance
+4. **Human/soft**: low amplitude, absorbing material
+5. **Unknown**: not enough data to classify confidently
 
-## Telemetry Format
+## Telemetry format
 
-JSON telemetry format (921600 baud):
+JSON over serial at 921600 baud:
 ```json
 {
   "t": 1234567890,       
@@ -255,39 +248,42 @@ JSON telemetry format (921600 baud):
 }
 ```
 
-## Performance Characteristics
+## Performance
 
 ### Firmware
-- **Sensor Sampling**: 100 Hz
-- **Telemetry Rate**: 50 Hz
-- **EKF Update Rate**: 100 Hz
-- **Classification Rate**: 50 Hz
-- **Memory Usage**: ~50KB RAM
-- **CPU Utilization**: ~60% (dual-core)
+- Sensor sampling: 100 Hz
+- Telemetry rate: 50 Hz
+- EKF update rate: 100 Hz
+- Classification rate: 50 Hz
+- Memory usage: roughly 50KB RAM
+- CPU utilization: around 60% across both cores
 
 ### Visualizer
-- **Frame Rate**: 30-60 FPS (depending on CPU)
-- **Latency**: <50ms
-- **Grid Resolution**: 400x400 pixels
-- **Maximum Range**: 4 meters
+- 30 to 60 FPS, depending on host CPU
+- Under 50ms latency end to end
+- 400x400 pixel grid
+- 4 meter maximum range
 
 ## Results
 
-- **Achieved 98.2% object classification accuracy across complex spatial environments (vs. ~70% baseline with standard ultrasonic thresholding).**
-- **Reduced end-to-end telemetry and display latency to <50ms at 60 FPS, improving overall system update responsiveness by 4x.**
+From internal testing on a handful of test environments:
+- Classification accuracy came out to about 98.2%, compared to roughly 70% with a simple distance-threshold approach.
+- End-to-end telemetry-to-display latency stayed under 50ms at 60 FPS, a meaningful improvement over the un-optimized pipeline.
 
-## Safety Considerations
+These numbers reflect one test setup rather than a rigorous benchmark suite, so treat them as a rough indicator rather than a guarantee for other environments.
 
-- **Electrical Safety**: Use appropriate voltage levels for sensors
-- **Mechanical Safety**: Secure servo motor to prevent injury
-- **Eye Safety**: Avoid pointing ultrasonic sensors at eyes
-- **Heat Management**: Ensure adequate ventilation for ESP32
+## Safety notes
+
+- Electrical: use sensor-appropriate voltage levels, don't wire anything at 5V logic into a 3.3V-only pin
+- Mechanical: mount the servo securely so it can't catch fingers or hair mid-sweep
+- Eyes: don't point ultrasonic sensors at eyes (mostly a non-issue for ultrasonic, but a good habit if you swap in a LiDAR module)
+- Heat: give the ESP32 some airflow, especially if it's running both cores hard for long periods
 
 ## Contributing
 
-Contributions are welcome! Areas for improvement:
+Contributions welcome. Some areas that could use work:
 - Additional sensor support (LiDAR, ToF)
-- Web-based visualization interface
-- Advanced ML models (neural networks)
+- A web-based visualization option
+- Fancier ML models (small neural nets instead of k-NN)
 - Multi-sensor fusion
-- SLAM implementation
+- A basic SLAM implementation
