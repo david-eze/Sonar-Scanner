@@ -1,6 +1,6 @@
 # AI-Enhanced Sonar & Spatial Occupancy Scanner
 
-A high-performance, AI-enhanced sonar scanning system built on ESP32-S3 with dual-core FreeRTOS architecture, featuring Extended Kalman Filter noise reduction, on-device ML classification, and real-time Python visualization with computer vision.
+Built on ESP32-S3 with dual-core FreeRTOS architecture, featuring Extended Kalman Filter noise reduction, on-device ML classification, and real-time Python visualization with computer vision.
 
 ## Features
 
@@ -51,13 +51,13 @@ UART0        -> USB/Serial (921600 baud)
 ### Firmware Structure
 ```
 src/
-├── main.cpp                      # Main application with FreeRTOS tasks
-├── extended_kalman_filter.cpp    # EKF implementation
-└── object_classifier.cpp         # k-NN ML classifier
+├── main.cpp                      
+├── extended_kalman_filter.cpp    
+└── object_classifier.cpp         
 
 include/
-├── extended_kalman_filter.h      # EKF header
-└── object_classifier.h           # Classifier header
+├── extended_kalman_filter.h      
+└── object_classifier.h           
 ```
 
 ### Core Assignment
@@ -182,15 +182,15 @@ Adjust the port based on your system (COM3 for Windows, /dev/ttyUSB0 for Linux).
 Edit `src/main.cpp` to modify:
 
 ```cpp
-#define TRIGGER_PIN      5      // Ultrasonic trigger pin
-#define ECHO_PIN         18     // Ultrasonic echo pin
-#define SERVO_PIN        16     // Servo PWM pin
+#define TRIGGER_PIN      5     
+#define ECHO_PIN         18     
+#define SERVO_PIN        16     
 
-#define SENSOR_SAMPLE_RATE_HZ    100    // Sensor sampling frequency
-#define TELEMETRY_RATE_HZ        50     // Telemetry output frequency
-#define SWEEP_PERIOD_MS          2000   // Sweep period
+#define SENSOR_SAMPLE_RATE_HZ    100    
+#define TELEMETRY_RATE_HZ        50     
+#define SWEEP_PERIOD_MS          2000   
 
-#define MAX_DISTANCE_M          4.0f    // Maximum detection range
+#define MAX_DISTANCE_M          4.0f    
 ```
 
 ### EKF Tuning
@@ -210,8 +210,8 @@ ExtendedKalmanFilter ekf(0.1f, 0.3f);
 
 Adjust sweep parameters in `motorControlTask`:
 ```cpp
-motorCommand.sweepAmplitude = 90.0f;  // ±90 degrees
-motorCommand.sweepFrequency = 0.5f;   // 0.5Hz sweep
+motorCommand.sweepAmplitude = 90.0f;  
+motorCommand.sweepFrequency = 0.5f;   
 ```
 
 ### Visualizer Parameters
@@ -219,15 +219,15 @@ motorCommand.sweepFrequency = 0.5f;   // 0.5Hz sweep
 Edit `visualizer.py` to modify:
 
 ```python
-self.grid_size = 400      # Grid resolution (pixels)
-self.scale = 100          # Pixels per meter
-self.decay_rate = 0.98    # Radar trail decay factor
+self.grid_size = 400    
+self.scale = 100          
+self.decay_rate = 0.98   
 ```
 
 DBSCAN clustering parameters:
 ```python
-eps = 0.3                # Cluster radius (meters)
-min_samples = 3           # Minimum points per cluster
+eps = 0.3              
+min_samples = 3           
 ```
 
 ## Object Classes
@@ -245,13 +245,13 @@ The system classifies objects into 5 categories:
 JSON telemetry format (921600 baud):
 ```json
 {
-  "t": 1234567890,        // Timestamp (microseconds)
-  "d": 1.23,              // Distance (meters)
-  "v": 0.05,              // Velocity (m/s)
-  "a": 45.0,              // Angle (degrees)
-  "c": 0.95,              // Confidence (0-1)
-  "oc": 1,                // Object class (0-4)
-  "cc": 0.87              // Classification confidence (0-1)
+  "t": 1234567890,       
+  "d": 1.23,             
+  "v": 0.05,             
+  "a": 45.0,              
+  "c": 0.95,           
+  "oc": 1,               
+  "cc": 0.87              
 }
 ```
 
@@ -271,56 +271,6 @@ JSON telemetry format (921600 baud):
 - **Grid Resolution**: 400x400 pixels
 - **Maximum Range**: 4 meters
 
-## Troubleshooting
-
-### Firmware Issues
-
-**No serial output**:
-- Check baud rate matches (921600)
-- Verify USB driver installation
-- Check TX/RX connections
-
-**Servo not moving**:
-- Verify SERVO_PIN configuration
-- Check PWM frequency (50Hz)
-- Ensure external power supply for servo
-
-**Sensor readings invalid**:
-- Check TRIGGER_PIN and ECHO_PIN connections
-- Verify sensor power supply (5V)
-- Check for electrical noise (add decoupling capacitors)
-
-### Visualizer Issues
-
-**No serial connection**:
-- Verify correct COM port
-- Check baud rate matches firmware
-- Ensure ESP32 is powered and running
-
-**Poor clustering results**:
-- Adjust DBSCAN `eps` parameter
-- Increase sensor sample rate
-- Improve EKF tuning for better noise filtering
-
-**High latency**:
-- Reduce grid resolution
-- Decrease decay rate
-- Optimize clustering parameters
-
-## Optimization Tips
-
-### Firmware
-- Enable PSRAM for larger buffers
-- Adjust task priorities based on requirements
-- Use hardware timers for precise timing
-- Optimize EKF parameters for your environment
-
-### Visualizer
-- Use GPU acceleration if available
-- Implement multi-threading for clustering
-- Reduce grid resolution for real-time performance
-- Use binary protocol instead of JSON for higher throughput
-
 ## Results
 
 - **Achieved 98.2% object classification accuracy across complex spatial environments (vs. ~70% baseline with standard ultrasonic thresholding).**
@@ -333,10 +283,6 @@ JSON telemetry format (921600 baud):
 - **Eye Safety**: Avoid pointing ultrasonic sensors at eyes
 - **Heat Management**: Ensure adequate ventilation for ESP32
 
-## License
-
-This project is provided as-is for educational and research purposes.
-
 ## Contributing
 
 Contributions are welcome! Areas for improvement:
@@ -345,15 +291,3 @@ Contributions are welcome! Areas for improvement:
 - Advanced ML models (neural networks)
 - Multi-sensor fusion
 - SLAM implementation
-
-## References
-
-- Extended Kalman Filter: Welch & Bishop, 2001
-- DBSCAN Clustering: Ester et al., 1996
-- ESP32-S3 Technical Reference Manual
-- FreeRTOS Documentation
-- ArduinoJson Library
-
-## Contact
-
-For questions or issues, please open an issue on the project repository.
