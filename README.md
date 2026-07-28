@@ -2,6 +2,22 @@
 
 An ESP32-S3 sonar rig that sweeps an ultrasonic sensor with a servo, filters the returns with an Extended Kalman Filter, classifies what it's looking at with an on-device k-NN model, and streams everything to a Python visualizer that draws a live occupancy grid.
 
+## Simulation
+
+![Simulation 1 Room Scan](./assets/simulation_1_room_scan.gif)
+![Simulation 2 EKF Filtering](./assets/simulation_2_ekf_filtering.gif)
+![Simulation 3 Classification Confidence](./assets/simulation_3_classification_confidence.png)
+![Simulation 3 Classification Feature Space](./assets/simulation_3_classification_feature_space.png)
+![Simulation 4 Sweep Clustering](./assets/simulation_4_sweep_clustering.gif)
+
+### Results
+
+From internal testing on a handful of test environments:
+- Classification accuracy came out to about 98.2%, compared to roughly 70% with a simple distance-threshold approach.
+- End-to-end telemetry-to-display latency stayed under 50ms at 60 FPS, a meaningful improvement over the un-optimized pipeline.
+
+These numbers reflect one test setup rather than a rigorous benchmark suite, so treat them as a rough indicator rather than a guarantee for other environments.
+
 ## Features
 
 ### Firmware (ESP32-S3)
@@ -263,14 +279,6 @@ JSON over serial at 921600 baud:
 - Under 50ms latency end to end
 - 400x400 pixel grid
 - 4 meter maximum range
-
-## Results
-
-From internal testing on a handful of test environments:
-- Classification accuracy came out to about 98.2%, compared to roughly 70% with a simple distance-threshold approach.
-- End-to-end telemetry-to-display latency stayed under 50ms at 60 FPS, a meaningful improvement over the un-optimized pipeline.
-
-These numbers reflect one test setup rather than a rigorous benchmark suite, so treat them as a rough indicator rather than a guarantee for other environments.
 
 ## Safety notes
 
