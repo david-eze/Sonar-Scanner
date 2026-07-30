@@ -4,11 +4,20 @@ An ESP32-S3 sonar rig that sweeps an ultrasonic sensor with a servo, filters the
 
 ## Simulation
 
-![Simulation 1 Room Scan](./assets/simulation_1_room_scan.gif)
-![Simulation 2 EKF Filtering](./assets/simulation_2_ekf_filtering.gif)
-![Simulation 3 Classification Confidence](./assets/simulation_3_classification_confidence.png)
-![Simulation 3 Classification Feature Space](./assets/simulation_3_classification_feature_space.png)
-![Simulation 4 Sweep Clustering](./assets/simulation_4_sweep_clustering.gif)
+![Simulation 1 Room Scan](./assets/simulation_1_room_scan.gif)     
+<i>(Robot moves through the room while logging range readings and building an occupancy grid from them in real time, which it then uses for basic collision aware path planning.)</i>
+
+![Simulation 2 EKF Filtering](./assets/simulation_2_ekf_filtering.gif)   
+<i>(Runs raw sonar readings through an Extended Kalman Filter to get stable distance and velocity estimates. Noticeably less jitter than using the raw readings directly.)</i>
+
+![Simulation 3 Classification Confidence](./assets/simulation_3_classification_confidence.png)    
+<i>(Classifier output includes confidence scores alongside the predicted label, so you can see how certain each prediction actually is instead of just trusting the top class.)</i>
+
+![Simulation 3 Classification Feature Space](./assets/simulation_3_classification_feature_space.png)     
+<i>(Plots the feature space used for classification, built from signal strength, motion, and geometry. Shows how these features separate the different object classes.)</i>
+
+![Simulation 4 Sweep Clustering](./assets/simulation_4_sweep_clustering.gif)    
+<i>(Actuator sweeps through its range while collecting scan points, then DBSCAN clusters them into distinct groups that get treated as separate obstacles.)</i>
 
 ### Results
 
