@@ -51,4 +51,4 @@ private:
     float matrixInverse1x1(float scalar);
 };
 
-#endif // EXTENDED_KALMAN_FILTER_H
+#endif
