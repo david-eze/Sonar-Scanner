@@ -81,4 +81,4 @@ private:
     ObjectClass vote(const uint8_t* neighbors, const float* distances);
 };
 
-#endif // OBJECT_CLASSIFIER_H
+#endif
